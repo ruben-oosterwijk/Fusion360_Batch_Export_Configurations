@@ -88,9 +88,11 @@ def run(context):
             depth = pieces[5]
             shelf_amount = pieces[6]
             divider_amount = pieces[7]
-            corpus_thickness = pieces[8]
-            front_thickness = pieces[9]
-            back_thickness = pieces[10]
+            front_material = pieces[8]
+            corpus_material = pieces[9]
+            corpus_thickness = pieces[10]
+            front_thickness = pieces[11]
+            back_thickness = pieces[12]
             
             dir_path = os.path.join(base_dir, f"Div{divider_amount}", f"Shelf{shelf_amount}")
             if not os.path.exists(dir_path):
@@ -121,7 +123,7 @@ def run(context):
             m_outside = get_component_mass(design, "Outside:1")
             m_total = m_inside + m_outside
             
-            filename_with_properties = (f"{parent_file}_{quantity}x_{filename}_massTotal{m_total:.3f}")
+            filename_with_properties = (f"{parent_file}_{quantity}x_{filename}_{front_material}_m{corpus_material}_massTotal{m_total:.3f}")
             
             exportMgr = design.exportManager
             step_path = os.path.join(dir_path, filename_with_properties + '.stp')
