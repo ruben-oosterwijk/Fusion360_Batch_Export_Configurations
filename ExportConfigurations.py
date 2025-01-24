@@ -80,16 +80,17 @@ def run(context):
         for line in file:
             pieces = line.strip().split(',')
             pieces = [p.strip('"') for p in pieces]
-            
-            filename = pieces[0]
-            height = pieces[1]
-            width = pieces[2]
-            depth = pieces[3]
-            shelf_amount = pieces[4]
-            divider_amount = pieces[5]
-            corpus_thickness = pieces[6]
-            front_thickness = pieces[7]
-            back_thickness = pieces[8]
+            parent_file = pieces[0]
+            quantity = pieces[1]
+            filename = pieces[2]
+            height = pieces[3]
+            width = pieces[4]
+            depth = pieces[5]
+            shelf_amount = pieces[6]
+            divider_amount = pieces[7]
+            corpus_thickness = pieces[8]
+            front_thickness = pieces[9]
+            back_thickness = pieces[10]
             
             dir_path = os.path.join(base_dir, f"Div{divider_amount}", f"Shelf{shelf_amount}")
             if not os.path.exists(dir_path):
@@ -98,6 +99,7 @@ def run(context):
             params = design.userParameters
             
             # Set all parameters
+            params.itemByName('Quantity').expression = quantity
             params.itemByName('Height').expression = height
             params.itemByName('Width').expression = width
             params.itemByName('Depth').expression = depth
@@ -119,7 +121,7 @@ def run(context):
             m_outside = get_component_mass(design, "Outside:1")
             m_total = m_inside + m_outside
             
-            filename_with_properties = (f"{filename}_massTotal{m_total:.3f}")
+            filename_with_properties = (f"{parent_file}_{quantity}x_{filename}_massTotal{m_total:.3f}")
             
             exportMgr = design.exportManager
             step_path = os.path.join(dir_path, filename_with_properties + '.stp')
