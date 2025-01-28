@@ -173,6 +173,58 @@ def update_panel_type(design, panel_setting):
         app = adsk.core.Application.get()
         app.userInterface.messageBox(f"Error updating Panel_Setting:\n{traceback.format_exc()}")
         
+def update_shelves(design, shelf_amount):
+    try:
+        root = design.rootComponent
+        # Traverse the hierarchy
+        corpus_occurrence = find_occurrence_by_name(root.occurrences, "Corpus:1")
+        if not corpus_occurrence:
+            raise ValueError("Corpus component not found!")
+
+        outside_occurrence = find_occurrence_by_name(corpus_occurrence.childOccurrences, "Inside:1")
+        if not outside_occurrence:
+            raise ValueError("Outside component not found!")
+
+        # Find all dividers components
+        shelving = find_occurrence_by_name(outside_occurrence.childOccurrences, "Shelving:1")
+        
+        # Hide all shelving components initially
+        if shelving:
+            shelving.isLightBulbOn = False
+
+        if shelf_amount > 0:
+            shelving.isLightBulbOn = True
+
+    except Exception as e:
+        app = adsk.core.Application.get()
+        app.userInterface.messageBox(f"Error updating Shelving_Setting:\n{traceback.format_exc()}")
+        
+def update_dividers(design, divider_amount):
+    try:
+        root = design.rootComponent
+        # Traverse the hierarchy
+        corpus_occurrence = find_occurrence_by_name(root.occurrences, "Corpus:1")
+        if not corpus_occurrence:
+            raise ValueError("Corpus component not found!")
+
+        outside_occurrence = find_occurrence_by_name(corpus_occurrence.childOccurrences, "Inside:1")
+        if not outside_occurrence:
+            raise ValueError("Outside component not found!")
+
+        # Find all panel components
+        dividers = find_occurrence_by_name(outside_occurrence.childOccurrences, "Dividers:1")
+
+        # Hide all shelving components initially
+        if dividers:
+            dividers.isLightBulbOn = False
+
+        if divider_amount > 0:
+            dividers.isLightBulbOn = True
+
+    except Exception as e:
+        app = adsk.core.Application.get()
+        app.userInterface.messageBox(f"Error updating Divider_Setting:\n{traceback.format_exc()}")
+        
         
 def select_file(ui):
     try:
@@ -237,8 +289,8 @@ def run(context):
             width = pieces[4]
             depth = pieces[5]
             front_type = pieces[6]
-            shelf_amount = pieces[7]
-            divider_amount = pieces[8]
+            shelf_amount = int(pieces[7])
+            divider_amount = int(pieces[8])
             plinth_setting = pieces[9]
             panel_setting = pieces[10]
             front_material = pieces[11]
@@ -260,6 +312,8 @@ def run(context):
             
             # Update the Front_Type configuration
             update_front_type(design, front_type)
+            update_dividers(design, divider_amount)
+            update_shelves(design, shelf_amount)
             
 
             # Set all parameters
@@ -269,18 +323,18 @@ def run(context):
             params.itemByName('Thickness_Corpus').expression = corpus_thickness
             params.itemByName('Thickness_Front').expression = front_thickness
             params.itemByName('Thickness_Back').expression = back_thickness
-            params.itemByName('Shelf_Amount').expression = shelf_amount
-            params.itemByName('Divider_Amount').expression = divider_amount
+            params.itemByName('Shelf_Amount').expression = str(shelf_amount)
+            params.itemByName('Divider_Amount').expression = str(divider_amount)
             params.itemByName('Quantity').expression = quantity
             
             
             params.itemByName('Side_Panel_Left_Thickness').expression = extra_panel_thickness
             params.itemByName('Side_Panel_Right_Thickness').expression = extra_panel_thickness
-            # params.itemByName('Plinth_Thickness_Right').expression = plinth_thickness
             
             params.itemByName('Plinth_Bottom_Thickness').expression = plinth_thickness
             params.itemByName('Plinth_Thickness_Left').expression = plinth_thickness
             params.itemByName('Plinth_Thickness_Right').expression = plinth_thickness
+            
             # Update the Front_Type configuration
             update_plinth_type(design, plinth_setting)
             # Update the Front_Type configuration        
