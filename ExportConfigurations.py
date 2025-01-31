@@ -128,6 +128,54 @@ class DesignConfiguration:
             if param:
                 param.expression = str(value)
 
+    
+    def update_appearance_color(self, appearance_name: str, r: int, g: int, b: int) -> None:
+        """Update the color of an existing appearance"""
+        try:
+            # Convert RGB values to 0-1 range
+            color = adsk.core.Color.create(r, g, b, 255)
+            
+            appearances = self.design.appearances
+            appearance = appearances.itemByName(appearance_name)
+            if appearance:
+                color_property = appearance.appearanceProperties.itemByName('Color')
+                if color_property:
+                    color_property.value = color
+        except Exception as e:
+            app = adsk.core.Application.get()
+            app.userInterface.messageBox(f'Failed to update appearance color for {appearance_name}:\n{str(e)}')
+
+    def update_all_appearances(self, row: dict) -> None:
+        """Update all placeholder appearances with colors from the CSV row"""
+        try:
+            # Update front appearance
+            self.update_appearance_color('Placeholder_Fronts',
+                int(row['Front_Color_R']),
+                int(row['Front_Color_G']),
+                int(row['Front_Color_B']))
+            
+            # Update corpus appearance
+            self.update_appearance_color('Placeholder_Corpus',
+                int(row['Corpus_Color_R']),
+                int(row['Corpus_Color_G']),
+                int(row['Corpus_Color_B']))
+            
+            # Update panels appearance
+            self.update_appearance_color('Placeholder_Side_Panels',
+                int(row['Panel_Color_R']),
+                int(row['Panel_Color_G']),
+                int(row['Panel_Color_B']))
+            
+            # Update plinth appearance
+            self.update_appearance_color('Placeholder_Plinth_Bottom',
+                int(row['Plinth_Color_R']),
+                int(row['Plinth_Color_G']),
+                int(row['Plinth_Color_B']))
+        except Exception as e:
+            app = adsk.core.Application.get()
+            app.userInterface.messageBox(f'Failed to update appearances:\n{str(e)}')
+
+
 def run(context):
     ui = None
     try:
@@ -163,8 +211,12 @@ def run(context):
             
             for row in reader:
                 # Create parent directory if needed
+                # Create parent directory if needed
                 parent_dir = os.path.join(base_dir, row['Parent_file'])
                 os.makedirs(parent_dir, exist_ok=True)
+                
+                # Add this new line here
+                config_manager.update_all_appearances(row)
                 
                 # Update design configuration
                 config_manager.update_front_type(row['Front_Type'])
@@ -185,7 +237,6 @@ def run(context):
                     'Thickness_Back': row['Thickness_Back'],
                     'Shelf_Amount': row['Shelf_Amount'],
                     'Divider_Amount': row['Divider_Amount'],
-                    'Quantity': row['Quantity'],
                     'Side_Panel_Left_Thickness': row['Thickness_Extra_Panel'],
                     'Side_Panel_Right_Thickness': row['Thickness_Extra_Panel'],
                     'Plinth_Bottom_Thickness': row['Thickness_Plinth'],
@@ -199,7 +250,7 @@ def run(context):
                         params['Drawer_Amount'] = str(num_drawers)
                     except ValueError:
                         pass
-                
+                # params['Quantity'] = row['Quantity']
                 config_manager.update_parameters(params)
                 
                 # Force design update
