@@ -1,0 +1,3 @@
+Parent_file,Element_Name,Quantity,Height,Width,Depth,Front_Type,Shelf_Amount,Divider_Amount,Plinth_Setting,Panel_Setting,Front_material,Corpus_material,Plinth_material,Extra_Panel_material,Thickness_Front,Thickness_Corpus,Thickness_Back,Thickness_Plinth,Thickness_Extra_Panel,Front_Color_R,Front_Color_G,Front_Color_B,Corpus_Color_R,Corpus_Color_G,Corpus_Color_B,Panel_Color_R,Panel_Color_G,Panel_Color_B,Plinth_Color_R,Plinth_Color_G,Plinth_Color_B
+Test,Kast1,1,1250,2250,2250,One door,0,0,None (Default),None (Default),A,A,A,A,20,15,10,5,30,255,0,0,200,200,200,180,180,180,150,150,150
+Test,Kast2,2,3250,1250,2250,Two doors,2,2,Left,None (Default),A,A,A,A,20,15,10,5,30,0,0,255,220,220,220,200,200,200,160,160,160
