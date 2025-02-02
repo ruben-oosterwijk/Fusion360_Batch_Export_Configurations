@@ -36,13 +36,45 @@ class DesignConfiguration:
         if component:
             component.isLightBulbOn = visible
 
+    def update_entry_type(self, entry_type: str) -> None:
+        valid_types = {"Cabinet", "Round Part", "Half Round Part", "Square Part"}
+        if entry_type not in valid_types:
+            app = adsk.core.Application.get()
+            app.userInterface.messageBox(f'Warning: Invalid entry type "{entry_type}"')
+            return
+
+        components_to_hide = [
+            "Corpus:1",
+            "Parts:1/Half_Round_Part:1",
+            "Parts:1/Round_Part:1",
+            "Parts:1/Square_Part:1"
+        ]
+
+        for path in components_to_hide:
+            self.update_visibility(path, False)
+
+        # Show only required components
+        if entry_type == "Cabinet":
+            self.update_visibility("Corpus:1", True)
+        elif entry_type == "Round Part":
+            self.update_visibility("Parts:1/Round_Part:1", True)
+        elif entry_type == "Half Round Part":
+            self.update_visibility("Parts:1/Half_Round_Part:1", True)
+        elif entry_type == "Square Part":
+            self.update_visibility("Parts:1/Square_Part:1", True)
+            
     def update_front_type(self, front_type: str) -> None:
         """Optimized front type updates using cached lookups"""
         # Hide all front components initially
         components_to_hide = [
+            "Corpus:1/Outside:1/Front:1/Fixed Front:1",
             "Corpus:1/Outside:1/Front:1/Single Door:1",
             "Corpus:1/Outside:1/Front:1/Double Door:1",
             "Corpus:1/Outside:1/Front:1/Drawer:1",
+            "Corpus:1/Outside:1/Front:1/Single Door with Drawer:1",
+            "Corpus:1/Outside:1/Front:1/Double Door with Drawer:1",
+            "Corpus:1/Outside:1/Front:1/Single Door with Fixed Front:1",
+            "Corpus:1/Outside:1/Front:1/Double Door with Fixed Front:1",
             "Corpus:1/Hardware:1/Door Handle:1",
             "Corpus:1/Hardware:1/Hinges:1",
             "Corpus:1/Hardware:1/Door Handle(Mirror):1",
@@ -64,6 +96,36 @@ class DesignConfiguration:
                 "Corpus:1/Hardware:1/Door Handle:1",
                 "Corpus:1/Hardware:1/Hinges:1",
                 "Corpus:1/Outside:1/Front:1/Double Door:1",
+                "Corpus:1/Hardware:1/Door Handle(Mirror):1",
+                "Corpus:1/Hardware:1/Hinges(Mirror):1"
+            ]
+            for path in components_to_show:
+                self.update_visibility(path, True)
+        elif front_type == "Fixed front":
+            self.update_visibility("Corpus:1/Outside:1/Front:1/Fixed Front:1", True)
+        elif front_type == "One door + One drawer":
+            self.update_visibility("Corpus:1/Outside:1/Front:1/Single Door with Drawer:1", True)
+            self.update_visibility("Corpus:1/Hardware:1/Door Handle:1", True)
+            self.update_visibility("Corpus:1/Hardware:1/Hinges:1", True)
+        elif front_type == "Two doors + Two drawers":
+            components_to_show = [
+                "Corpus:1/Outside:1/Front:1/Double Door with Drawer:1",
+                "Corpus:1/Hardware:1/Door Handle:1",
+                "Corpus:1/Hardware:1/Hinges:1",
+                "Corpus:1/Hardware:1/Door Handle(Mirror):1",
+                "Corpus:1/Hardware:1/Hinges(Mirror):1"
+            ]
+            for path in components_to_show:
+                self.update_visibility(path, True)
+        elif front_type == "One door + Fixed front":
+            self.update_visibility("Corpus:1/Outside:1/Front:1/Single Door with Fixed Front:1", True)
+            self.update_visibility("Corpus:1/Hardware:1/Door Handle:1", True)
+            self.update_visibility("Corpus:1/Hardware:1/Hinges:1", True)
+        elif front_type == "Two doors + Fixed front":
+            components_to_show = [
+                "Corpus:1/Outside:1/Front:1/Double Door with Fixed Front:1",
+                "Corpus:1/Hardware:1/Door Handle:1",
+                "Corpus:1/Hardware:1/Hinges:1",
                 "Corpus:1/Hardware:1/Door Handle(Mirror):1",
                 "Corpus:1/Hardware:1/Hinges(Mirror):1"
             ]
@@ -111,14 +173,16 @@ class DesignConfiguration:
             self.update_visibility(panel_components["left"], True)
 
     def update_shelves_and_dividers(self, shelf_amount: int, divider_amount: int) -> None:
-        """Optimized shelf and divider updates"""
         self.update_visibility("Corpus:1/Inside:1/Shelving:1", shelf_amount > 0)
         self.update_visibility("Corpus:1/Inside:1/Dividers:1", divider_amount > 0)
 
-    def update_feet(self, shelf_amount: int, divider_amount: int) -> None:
-        """Optimized shelf and divider updates"""
-        self.update_visibility("Corpus:1/Inside:1/Shelving:1", shelf_amount > 0)
-        self.update_visibility("Corpus:1/Inside:1/Dividers:1", divider_amount > 0)
+    def update_feet(self, feet_toggle) -> None:
+        """Update feet visibility based on input value (1 or empty)"""
+        feet_visible = feet_toggle == "1"
+        self.update_visibility("Corpus:1/Hardware:1/Feet:1", feet_visible)
+
+    def update_clothing_rods(self, clothing_rods_amount: int) -> None:
+        self.update_visibility("Corpus:1/Hardware:1/Clothing Rods:1", clothing_rods_amount > 0)
 
     def update_parameters(self, params: dict) -> None:
         """Batch update parameters"""
@@ -146,31 +210,17 @@ class DesignConfiguration:
             app.userInterface.messageBox(f'Failed to update appearance color for {appearance_name}:\n{str(e)}')
 
     def update_all_appearances(self, row: dict) -> None:
-        """Update all placeholder appearances with colors from the CSV row"""
         try:
-            # Update front appearance
-            self.update_appearance_color('Placeholder_Fronts',
-                int(row['Front_Color_R']),
-                int(row['Front_Color_G']),
-                int(row['Front_Color_B']))
-            
-            # Update corpus appearance
-            self.update_appearance_color('Placeholder_Corpus',
-                int(row['Corpus_Color_R']),
-                int(row['Corpus_Color_G']),
-                int(row['Corpus_Color_B']))
-            
-            # Update panels appearance
-            self.update_appearance_color('Placeholder_Side_Panels',
-                int(row['Panel_Color_R']),
-                int(row['Panel_Color_G']),
-                int(row['Panel_Color_B']))
-            
-            # Update plinth appearance
-            self.update_appearance_color('Placeholder_Plinth_Bottom',
-                int(row['Plinth_Color_R']),
-                int(row['Plinth_Color_G']),
-                int(row['Plinth_Color_B']))
+            for appearance_type in ['Front', 'Corpus', 'Panel', 'Plinth']:
+                try:
+                    r = int(row[f'{appearance_type}_Color_R'])
+                    g = int(row[f'{appearance_type}_Color_G'])
+                    b = int(row[f'{appearance_type}_Color_B'])
+                    self.update_appearance_color(f'Placeholder_{appearance_type}s', r, g, b)
+                except (ValueError, KeyError) as e:
+                    app = adsk.core.Application.get()
+                    app.userInterface.messageBox(f'Warning: Could not update {appearance_type} color: {str(e)}')
+                    continue
         except Exception as e:
             app = adsk.core.Application.get()
             app.userInterface.messageBox(f'Failed to update appearances:\n{str(e)}')
@@ -217,15 +267,18 @@ def run(context):
                 
                 # Add this new line here
                 config_manager.update_all_appearances(row)
-                
                 # Update design configuration
+                config_manager.update_entry_type(row['Entry_Type'])
                 config_manager.update_front_type(row['Front_Type'])
                 config_manager.update_plinth_type(row['Plinth_Setting'])
-                config_manager.update_panel_type(row['Panel_Setting'])
+                config_manager.update_panel_type(row['Extra_Side_Panel_Setting'])
                 config_manager.update_shelves_and_dividers(
                     int(row['Shelf_Amount']), 
                     int(row['Divider_Amount'])
                 )
+                
+                config_manager.update_clothing_rods(int(row['Clothing_Rod_Amount']))
+                config_manager.update_feet(row['Feet'])
                 
                 # Batch update parameters
                 params = {
@@ -241,7 +294,8 @@ def run(context):
                     'Side_Panel_Right_Thickness': row['Thickness_Extra_Panel'],
                     'Plinth_Bottom_Thickness': row['Thickness_Plinth'],
                     'Plinth_Thickness_Left': row['Thickness_Plinth'],
-                    'Plinth_Thickness_Right': row['Thickness_Plinth']
+                    'Plinth_Thickness_Right': row['Thickness_Plinth'],
+                    'Clothing_Rod_Amount': row['Clothing_Rod_Amount']
                 }
                 
                 if "drawers" in row['Front_Type'].lower():
@@ -259,14 +313,16 @@ def run(context):
                 adsk.doEvents()
                 
                 # Generate filename and export
-                filename = f"{row['Parent_file']}_{row['Element_Name']}_{row['Quantity']}x_FM-{row['Front_material']}_CM-{row['Corpus_material']}_PM-{row['Plinth_material']}"
+                filename = f"{row['Parent_file']}_{row['Element_Name']}_{row['Entry_Type']}_{row['Quantity']}x"
                 step_path = os.path.join(parent_dir, f"{filename}.stp")
                 step_options = export_mgr.createSTEPExportOptions(step_path)
                 export_mgr.execute(step_options)
                 
                 total_processed += 1
                 if total_processed % 10 == 0:
-                    print(f'Processed {total_processed} files...')
+                    print(f'Processed {total_processed} files... Current: {row["Element_Name"]} ({row["Entry_Type"]})')
+
+
         
         app.userInterface.suppressDialogs = False
         ui.messageBox(f'Export complete! Processed {total_processed} configurations.')
