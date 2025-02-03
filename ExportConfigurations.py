@@ -103,7 +103,7 @@ class DesignConfiguration:
             ]
             for path in components_to_show:
                 self.update_visibility(path, True)
-        elif front_type == "Fixed front":
+        elif front_type == "Fixed Front":
             self.update_visibility("Corpus:1/Outside:1/Front:1/Fixed Front:1", True)
         elif front_type == "One door + One drawer":
             self.update_visibility("Corpus:1/Outside:1/Front:1/Single Door with Drawer:1", True)
@@ -213,12 +213,12 @@ class DesignConfiguration:
 
     def update_all_appearances(self, row: dict) -> None:
         try:
-            for appearance_type in ['Front', 'Corpus', 'Panel', 'Plinth']:
+            for appearance_type in ['Front', 'Corpus', 'Back', 'Panel', 'Plinth']:
                 try:
                     r = int(row[f'{appearance_type}_Color_R'])
                     g = int(row[f'{appearance_type}_Color_G'])
                     b = int(row[f'{appearance_type}_Color_B'])
-                    self.update_appearance_color(f'Placeholder_{appearance_type}s', r, g, b)
+                    self.update_appearance_color(f'Placeholder_{appearance_type}', r, g, b)
                 except (ValueError, KeyError) as e:
                     app = adsk.core.Application.get()
                     app.userInterface.messageBox(f'Warning: Could not update {appearance_type} color: {str(e)}')
@@ -273,7 +273,7 @@ def run(context):
                 config_manager.update_entry_type(row['Entry_Type'])
                 config_manager.update_front_type(row['Front_Type'])
                 config_manager.update_plinth_type(row['Plinth_Setting'])
-                config_manager.update_panel_type(row['Extra_Side_Panel_Setting'])
+                config_manager.update_panel_type(row['Extra_Panel_Setting'])
                 config_manager.update_shelves_and_dividers(
                     int(row['Shelf_Amount']), 
                     int(row['Divider_Amount'])
