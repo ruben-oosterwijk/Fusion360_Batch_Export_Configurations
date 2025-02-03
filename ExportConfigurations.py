@@ -57,10 +57,13 @@ class DesignConfiguration:
         if entry_type == "Cabinet":
             self.update_visibility("Corpus:1", True)
         elif entry_type == "Round Part":
+            self.update_visibility("Parts:1", True)
             self.update_visibility("Parts:1/Round_Part:1", True)
         elif entry_type == "Half Round Part":
+            self.update_visibility("Parts:1", True)
             self.update_visibility("Parts:1/Half_Round_Part:1", True)
         elif entry_type == "Square Part":
+            self.update_visibility("Parts:1", True)
             self.update_visibility("Parts:1/Square_Part:1", True)
             
     def update_front_type(self, front_type: str) -> None:
@@ -92,10 +95,9 @@ class DesignConfiguration:
             self.update_visibility("Corpus:1/Hardware:1/Hinges:1", True)
         elif front_type == "Two doors":
             components_to_show = [
-                "Corpus:1/Outside:1/Front:1/Single Door:1",
+                "Corpus:1/Outside:1/Front:1/Double Door:1",
                 "Corpus:1/Hardware:1/Door Handle:1",
                 "Corpus:1/Hardware:1/Hinges:1",
-                "Corpus:1/Outside:1/Front:1/Double Door:1",
                 "Corpus:1/Hardware:1/Door Handle(Mirror):1",
                 "Corpus:1/Hardware:1/Hinges(Mirror):1"
             ]
